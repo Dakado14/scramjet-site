@@ -34,15 +34,17 @@
 
     async function init() {
       await scramjet.init();
-      await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+      await navigator.serviceWorker.ready;
       const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
       await connection.setTransport("https://unpkg.com", [{ wisp: WISP_URL }]);
     }
 
-    init();
+    const readyPromise = init();
 
-    document.getElementById("proxy-form").addEventListener("submit", (e) => {
+    document.getElementById("proxy-form").addEventListener("submit", async (e) => {
       e.preventDefault();
+      await readyPromise;
       let url = document.getElementById("url-input").value.trim();
       if (!url.startsWith("http://") && !url.startsWith("https://")) {
         url = "https://" + url;
